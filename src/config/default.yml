@@ -1,0 +1,75 @@
+# === Global Experiment Settings ===================================================================
+experiment:
+  name: initial_representations_run
+  train: false                  # If true, runs training loop
+  n_seeds: 5                    # Number of random seeds per model spec
+  log_interval: 10              # Logging frequency during training
+
+# === Random Seed Control ==========================================================================
+seed:
+  master_seed: 0                # Root seed for reproducibility
+
+# === Logging Configuration ========================================================================
+log:
+  dir: logs/                    # Log directory
+  level: info                   # Logging level (info|debug|warn|error)
+
+# === I/O Configuration ============================================================================
+paths:
+  models_dir: data/models/      # Location to save trained models
+  results_dir: data/results/    # Location to save training results
+  figures_dir: figures/         # Location any precomputed or stored datasets
+
+# === Task Configuration ===========================================================================
+task:
+  n_samples: 10                   # Number of input samples per task (default)
+  input_dim: 100                  # Dimensionality of input vectors (default)
+  output_dim: 1                   # Dimensionality of output vectors (default)
+  n_tasks: 5                      # Number of tasks to generate per instance (default)
+  input_norm: 1.0                 # Norm of the input vectors (default)
+  instances:
+    - name: isotropic_1
+      type: isotropic
+      mapping: random             # Input-Output mapping (random|linear)
+    - name: lowrank_1             # Parameters for low-rank task generator
+      type: lowrank
+      rank: 5                     # Rank for low-rank Gaussian tasks
+      noise_std: 0.05             # Isotropic noise added to low-rank structure
+    - name: structured_1          # Parameters for structured task generator
+      type: structured
+      n_contexts: 2
+      n_stim_per_context: 5       # 2 \times 5 = 10 (to match `n_samples`)
+      background_modes: 1         # Dimensionality of background context (modes)
+      noise_std: 0.05
+
+# === Model Configuration ==========================================================================
+model:
+  instances:
+    - name: linear_1
+      type: linear
+      input_dim: 100
+      output_dim: 10
+      n_layers: 2
+      activation: relu
+    - name: linear_2
+      type: linear
+      input_dim: 100
+      output_dim: 10
+      n_layers: 3
+      activation: relu
+  type: [linear, relu]            # Model class to instantiate
+  width_ratios: [0.5, 1.0, 2.0]   # Widths as multiples of input_dim
+  init_var:                       # Initialization variance per model type
+    linear: [0.1, 1.0, 10.0]      # Variance used in weights N(0, sigma^2)
+    relu: [0.1, 1.0, 2.0]         # Variance used in He init (2σ²/d_in)
+
+# === Training Configuration =======================================================================
+train:
+  optimizer: sgd
+  lr: 0.01                        # Learning rate for SGD
+  n_epochs: 100
+  batch_size: -1                  # Batch size for SGD (default: full batch)
+  save_every: 1                   # Save snapshot frequency (if implemented)
+
+# === Analysis/Visualisation (Post-hoc) ============================================================
+analysis:
